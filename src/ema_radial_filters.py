@@ -4,7 +4,7 @@ Implementation of ema radial filters, as first part of Eq. 13 in [1].
 [1] Ahrens, J. (2022). Ambisonic Encoding of Signals From Equatorial Microphone
     Arrays (No. arXiv:2211.00584). arXiv. http://arxiv.org/abs/2211.00584
 """
-#%%
+
 import scipy.special as special
 import scipy as sc
 import numpy as np
@@ -13,7 +13,7 @@ from .utils import _derivative_sph_hankel, _limiting, _tikhonov_regularization
 
 
 def radial_filters_ema(f, R, N, limit_dB=None,
-                               regularization_type=None, hankel_type=2):
+                       regularization_type=None, hankel_type=2):
     r"""
     Compute the radial filters used in [1]_ for encoding signals from
     equatorial microphone arrays (EMAs) to spherical harmonics.
@@ -62,9 +62,10 @@ def radial_filters_ema(f, R, N, limit_dB=None,
         hankel_derivative = _derivative_sph_hankel(n, hankel_type, kR)
         b_n[n, :] = -4 * np.pi * 1j**n * (1j / kR**2) * (1 / hankel_derivative)
 
-    # catch NANs
-    idx_nan = np.argwhere(np.isnan(b_n))
-    b_n[idx_nan] = np.abs(b_n[idx_nan+1])
+    # catch NANs (Usually happens at DC bin)
+    idx_nan = np.where(np.isnan(b_n))
+    # replace NANs 
+    b_n[idx_nan] = np.abs(np.roll(b_n, -1, axis=-1)[idx_nan])
 
     radial_filters = np.zeros((2*N+1, b_n.shape[-1]), dtype=b_n.dtype)
 
@@ -90,8 +91,10 @@ def radial_filters_ema(f, R, N, limit_dB=None,
                              " 'hard' or 'tikhonov'.")
 
     # catch NANs introduced by inversion
-    idx_nan = np.argwhere(np.isnan(inverse_radial_filter))
-    inverse_radial_filter[idx_nan] = np.abs(inverse_radial_filter[idx_nan+1])
+    idx_nan = np.where(np.isnan(inverse_radial_filter))
+    # replace NANs
+    inverse_radial_filter[idx_nan] = \
+        np.abs(np.roll(inverse_radial_filter, -1, axis=-1)[idx_nan])
 
     # inverse fourier transform to get time-signal
     inverse_radial_filter_t = sc.fft.irfft(inverse_radial_filter)
