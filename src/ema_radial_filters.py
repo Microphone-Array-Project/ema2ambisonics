@@ -12,7 +12,7 @@ import pyfar as pf
 from .utils import _derivative_sph_hankel, _limiting, _tikhonov_regularization
 
 
-def inverse_radial_filters_ema(f, R, N, limit_dB=None,
+def radial_filters_ema(f, R, N, limit_dB=None,
                                regularization_type=None, hankel_type=2):
     r"""
     Compute the radial filters used in [1]_ for encoding signals from
@@ -30,20 +30,20 @@ def inverse_radial_filters_ema(f, R, N, limit_dB=None,
         Maximum allowed gain in dB for the filters.
     regularization_type : string
         Type of regularization used for regularized inversion.
-        
+
         'soft'
             Soft limiting.
         'hard'
             Hard limiting.
         'tikhonov'
-            Tikhonov regularization 
+            Tikhonov regularization
     hankel_type : int
         Type of Hankel function. 1 for Hankel function of the first kind and 2
         for Hankel function of the second kind. Default is 2.
 
     Returns
     -------
-    radial_filters : array
+    radial_filters : pyfar.Signal
         Radial filters for encoding signals from EMAs to spherical harmonics.
 
     References
@@ -74,7 +74,7 @@ def inverse_radial_filters_ema(f, R, N, limit_dB=None,
             radial_filters[m + n, :] += \
                 b_n[n_prime, :] * special.sph_harm(m, n_prime, 0, np.pi/2)**2
 
-    # inverse
+    # invert the radial filters
     inverse_radial_filter = 1 / radial_filters
 
     if limit_dB is not None:
@@ -86,20 +86,22 @@ def inverse_radial_filters_ema(f, R, N, limit_dB=None,
             inverse_radial_filter = _tikhonov_regularization(radial_filters,
                                                              limit_dB)
         else:
-            raise ValueError("Invalid regularization parameter. Choose 'soft'," 
+            raise ValueError("Invalid regularization parameter. Choose 'soft',"
                              " 'hard' or 'tikhonov'.")
 
     # catch NANs introduced by inversion
     idx_nan = np.argwhere(np.isnan(inverse_radial_filter))
     inverse_radial_filter[idx_nan] = np.abs(inverse_radial_filter[idx_nan+1])
 
+    # inverse fourier transform to get time-signal
     inverse_radial_filter_t = sc.fft.irfft(inverse_radial_filter)
 
+    # create pyfar.Signal object
     inverse_radial_filter_t = pf.Signal(data=inverse_radial_filter_t,
                                         sampling_rate=48e3)
 
+    # shift signal to get causal filter
     shift = inverse_radial_filter_t.n_samples / 2
-
     inverse_radial_filter_t = \
         pf.dsp.fractional_time_shift(inverse_radial_filter_t, shift, 
                                      mode='cyclic')

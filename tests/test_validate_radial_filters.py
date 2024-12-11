@@ -16,7 +16,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 
 # Import the module
-from src.ema_radial_filters import inverse_radial_filters_ema
+from src.ema_radial_filters import radial_filters_ema
 
 
 class ValidateEMARadialFilters(unittest.TestCase):
@@ -36,8 +36,7 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
-        radial_filters = inverse_radial_filters_ema(f, 0.0875, 7, 40,
-                                                    'tikhonov')
+        radial_filters = radial_filters_ema(f, 0.0875, 7, 40, 'tikhonov')
 
         np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
@@ -57,8 +56,7 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
-        radial_filters = inverse_radial_filters_ema(f, 0.0875, 7, 40,
-                                                    'soft')
+        radial_filters = radial_filters_ema(f, 0.0875, 7, 40, 'soft')
 
         np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
@@ -78,8 +76,7 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
-        radial_filters = inverse_radial_filters_ema(f, 0.0875, 7, 40,
-                                                    'hard')
+        radial_filters = radial_filters_ema(f, 0.0875, 7, 40, 'hard')
 
         np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
