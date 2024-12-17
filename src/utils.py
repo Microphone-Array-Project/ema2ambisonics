@@ -28,20 +28,28 @@ def _derivative_sph_hankel(n, k, z):
 def _limiting(data, type, limit_db):
     """Apply limiting based on passed type and limit in db.
 
+    Soft clipping as in [#]_.
+
     Parameters
     ----------
     data : np.array
         Data to be limited.
     type : str
-        Type of limiting. 'hard' for hard limiting and 'soft' for soft 
+        Type of limiting. 'hard' for hard limiting and 'soft' for soft
         limiting.
     limit_db : float
         Limit in dB.
-    
+
     Returns
     -------
     data : np.array
         Limited data.
+
+    References
+    ----------
+    .. [#] Bernschütz, B. (2016). “Microphone arrays and sound field 
+           decomposition for dynamic binaural recording,” Ph.D. thesis, 
+           Technische Universita€t Berlin, Berlin, Germany.
     """
     # convert dB to amplitude
     limit = 10**(limit_db / 20)
@@ -90,7 +98,7 @@ def _spherical_hankel_function(nu, k, z):
 def _tikhonov_regularization(data, limit_db):
     """Apply Tikhonov regularization to the data.
 
-    Tikhonov regularization as used in (Moreau, Daniel, Bertet, AES 2006)
+    Tikhonov regularization as used in [#]_.
 
     Parameters
     ----------
@@ -103,6 +111,14 @@ def _tikhonov_regularization(data, limit_db):
     -------
     data : np.array
         Regularized data.
+    
+    References
+    ----------
+    .. [#] Moreau, Sébastien, Jérôme Daniel, und Stéphanie Bertet. „3D Sound 
+           Field Recording with Higher Order Ambisonics – Objective 
+           Measurements and Validation of a 4th Order Spherical Microphone“, 
+           2006.
+
     """
     # convert dB to amplitude
     limit = 10**(limit_db / 20)
