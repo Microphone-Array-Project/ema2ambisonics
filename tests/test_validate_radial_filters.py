@@ -32,7 +32,7 @@ class ValidateEMARadialFilters(unittest.TestCase):
         Order: 7
         Filter lentgh: 2048
         """
-        expected = sc.io.loadmat(r'tests/resources/ema_rf_t_thikonov_40db.mat')
+        expected = sc.io.loadmat(r'tests/resources/ema_rf_t_tikhonov_40db.mat')
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
@@ -60,7 +60,7 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
-        
+
     def test_compare_hard_limiting_40db(self):
         """
         Compare the ema radial filter implementation with results from Matlab.
@@ -81,3 +81,62 @@ class ValidateEMARadialFilters(unittest.TestCase):
         np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
 
+    def test_compare_tikhonov_20db(self):
+        """
+        Compare the ema radial filter implementation with results from Matlab.
+
+        The radial filters are computed using Tikhonov regularization with a
+        limit of 20 dB.
+
+        Radius of EMA: 0.15 m
+        Order: 13
+        Filter lentgh: 2048
+        """
+        expected = sc.io.loadmat(r'tests/resources/ema_rf_t_tikhonov_20db.mat')
+
+        filter_length = 2048
+        f = np.linspace(0, 48e3/2, filter_length//2+1)
+        radial_filters = radial_filters_ema(f, 0.15, 13, 20, 'tikhonov')
+
+        np.testing.assert_allclose(radial_filters.time,
+                                   expected['ema_inv_rf_t'].T)
+
+    def test_compare_soft_limiting_20db(self):
+        """
+        Compare the ema radial filter implementation with results from Matlab.
+
+        The radial filters are computed using soft limiting with a
+        limit of 20 dB.
+
+        Radius of EMA: 0.15 m
+        Order: 13
+        Filter lentgh: 2048
+        """
+        expected = sc.io.loadmat(r'tests/resources/ema_rf_t_soft_20db.mat')
+
+        filter_length = 2048
+        f = np.linspace(0, 48e3/2, filter_length//2+1)
+        radial_filters = radial_filters_ema(f, 0.15, 13, 20, 'soft')
+
+        np.testing.assert_allclose(radial_filters.time,
+                                   expected['ema_inv_rf_t'].T)
+
+    def test_compare_hard_limiting_20db(self):
+        """
+        Compare the ema radial filter implementation with results from Matlab.
+
+        The radial filters are computed using hard limiting with a
+        limit of 20 dB.
+
+        Radius of EMA: 0.15 m
+        Order: 13
+        Filter lentgh: 2048
+        """
+        expected = sc.io.loadmat(r'tests/resources/ema_rf_t_hard_20db.mat')
+
+        filter_length = 2048
+        f = np.linspace(0, 48e3/2, filter_length//2+1)
+        radial_filters = radial_filters_ema(f, 0.15, 13, 20, 'hard')
+
+        np.testing.assert_allclose(radial_filters.time,
+                                   expected['ema_inv_rf_t'].T)
