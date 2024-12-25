@@ -9,11 +9,12 @@ import scipy.special as special
 import scipy as sc
 import numpy as np
 import pyfar as pf
+from numbers import Number
 from .utils import _derivative_sph_hankel, _limiting, _tikhonov_regularization
 
 
-def radial_filters_ema(f, R, N, limit_dB=None,
-                       regularization_type=None, hankel_type=2):
+def radial_filters_ema(f, R, N, limit_dB,
+                       regularization_type, hankel_type=2):
     r"""
     Compute the radial filters used in [1]_ for encoding signals from
     equatorial microphone arrays (EMAs) to spherical harmonics.
@@ -23,7 +24,7 @@ def radial_filters_ema(f, R, N, limit_dB=None,
     f : array
         Frequencies in Hz at which the filters are calculated.
     R : float
-        Radius of the microphone array.
+        Radius of the microphone array in meters.
     N : int
         Max order of array.
     limit_dB : float
@@ -52,6 +53,15 @@ def radial_filters_ema(f, R, N, limit_dB=None,
     Microphone Arrays (No. arXiv:2211.00584). arXiv.
     http://arxiv.org/abs/2211.00584
     """
+    # Check input values
+    if not isinstance(R, Number):
+        raise ValueError('`R` must be a single value')
+    if not isinstance(limit_dB, Number):
+        raise ValueError('`limit_dB` must be a single value')
+    if hankel_type not in [1, 2]:
+        raise ValueError('`hankel_type` must be 1 or 2 (for first or '
+                         'second kind hankel function)')
+
     k = 2 * np.pi * f / 343
     b_n = np.zeros((N + 1, k.shape[0]), dtype=np.complex128)
     kR = k * R + 5 * np.finfo(float).eps
@@ -64,7 +74,7 @@ def radial_filters_ema(f, R, N, limit_dB=None,
 
     # catch NANs (Usually happens at DC bin)
     idx_nan = np.where(np.isnan(b_n))
-    # replace NANs 
+    # replace NANs
     b_n[idx_nan] = np.abs(np.roll(b_n, -1, axis=-1)[idx_nan])
 
     radial_filters = np.zeros((2*N+1, b_n.shape[-1]), dtype=b_n.dtype)
@@ -78,17 +88,16 @@ def radial_filters_ema(f, R, N, limit_dB=None,
     # invert the radial filters
     inverse_radial_filter = 1 / radial_filters
 
-    if limit_dB is not None:
-        # dB limiting / regularization
-        if regularization_type in ['soft', 'hard']:
-            inverse_radial_filter = _limiting(inverse_radial_filter,
-                                              regularization_type, limit_dB)
-        elif regularization_type == 'tikhonov':
-            inverse_radial_filter = _tikhonov_regularization(radial_filters,
-                                                             limit_dB)
-        else:
-            raise ValueError("Invalid regularization parameter. Choose 'soft',"
-                             " 'hard' or 'tikhonov'.")
+    # dB limiting / regularization
+    if regularization_type in ['soft', 'hard']:
+        inverse_radial_filter = _limiting(inverse_radial_filter,
+                                          regularization_type, limit_dB)
+    elif regularization_type == 'tikhonov':
+        inverse_radial_filter = _tikhonov_regularization(radial_filters,
+                                                         limit_dB)
+    else:
+        raise ValueError("Invalid regularization type. Choose 'soft',"
+                         " 'hard' or 'tikhonov'.")
 
     # catch NANs introduced by inversion
     idx_nan = np.where(np.isnan(inverse_radial_filter))
@@ -106,7 +115,7 @@ def radial_filters_ema(f, R, N, limit_dB=None,
     # shift signal to get causal filter
     shift = inverse_radial_filter_t.n_samples / 2
     inverse_radial_filter_t = \
-        pf.dsp.fractional_time_shift(inverse_radial_filter_t, shift, 
+        pf.dsp.fractional_time_shift(inverse_radial_filter_t, shift,
                                      mode='cyclic')
 
     return inverse_radial_filter_t
