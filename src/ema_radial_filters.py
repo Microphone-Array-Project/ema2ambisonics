@@ -14,7 +14,7 @@ from .utils import _derivative_sph_hankel, _limiting, _tikhonov_regularization
 
 
 def radial_filters_ema(f, R, N, limit_dB,
-                       regularization_type, hankel_type=2):
+                       regularization_type, hankel_type=2, sampling_rate=48e3):
     r"""
     Compute the radial filters used in [1]_ for encoding signals from
     equatorial microphone arrays (EMAs) to spherical harmonics.
@@ -41,10 +41,13 @@ def radial_filters_ema(f, R, N, limit_dB,
     hankel_type : int
         Type of Hankel function. 1 for Hankel function of the first kind and 2
         for Hankel function of the second kind. Default is 2.
+    sampling_rate: int
+        Sampling rate of signals to be filtered. Necessary for design of FIR
+        filter. Default is 48000 Hz.
 
     Returns
     -------
-    radial_filters : pyfar.Signal
+    radial_filters : pyfar.FIRFilter
         Radial filters for encoding signals from EMAs to spherical harmonics.
 
     References
@@ -110,7 +113,7 @@ def radial_filters_ema(f, R, N, limit_dB,
 
     # create pyfar.Signal object
     inverse_radial_filter_t = pf.Signal(data=inverse_radial_filter_t,
-                                        sampling_rate=48e3)
+                                        sampling_rate=sampling_rate)
 
     # shift signal to get causal filter
     shift = inverse_radial_filter_t.n_samples / 2
@@ -118,4 +121,5 @@ def radial_filters_ema(f, R, N, limit_dB,
         pf.dsp.fractional_time_shift(inverse_radial_filter_t, shift,
                                      mode='cyclic')
 
-    return inverse_radial_filter_t
+    return pf.FilterFIR(inverse_radial_filter_t.time,
+                        inverse_radial_filter_t.sampling_rate)
