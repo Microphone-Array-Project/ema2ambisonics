@@ -121,5 +121,4 @@ def radial_filters_ema(f, R, N, limit_dB,
         pf.dsp.fractional_time_shift(inverse_radial_filter_t, shift,
                                      mode='cyclic')
 
-    return pf.FilterFIR(inverse_radial_filter_t.time,
-                        inverse_radial_filter_t.sampling_rate)
+    return  inverse_radial_filter_t

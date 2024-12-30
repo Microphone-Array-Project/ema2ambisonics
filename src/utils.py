@@ -126,5 +126,4 @@ def _tikhonov_regularization(data, limit_db):
     lambda_squared = \
         (1 - np.sqrt(1 - 1/limit**2)) / (1 + np.sqrt(1 - 1/limit**2))
     data_regu = np.conj(data) / (np.abs(data)**2 + lambda_squared)
-    print(lambda_squared)
     return data_regu

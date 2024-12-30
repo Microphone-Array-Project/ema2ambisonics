@@ -21,8 +21,6 @@ from src.ema_radial_filters import radial_filters_ema
 
 
 class ValidateEMARadialFilters(unittest.TestCase):
-    impulse = pf.signals.impulse(2048, sampling_rate=48000)
-
     def test_compare_tikhonov_40db(self):
         """
         Compare the ema radial filter implementation with results from Matlab.
@@ -38,10 +36,9 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
-        radial_filters = radial_filters_ema(f, 0.0875, 7, 40, 'tikhonov')
-        filt_response = radial_filters.process(self.impulse)
+        radial_filters = radial_filters_ema(f, 0.0875, 7, 40, 'tikhonov')       
 
-        np.testing.assert_allclose(filt_response.time.squeeze(),
+        np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
 
     def test_compare_soft_limiting_40db(self):
@@ -59,10 +56,9 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
-        radial_filters = radial_filters_ema(f, 0.0875, 7, 40, 'soft')
-        filt_response = radial_filters.process(self.impulse)
+        radial_filters = radial_filters_ema(f, 0.0875, 7, 40, 'soft')       
 
-        np.testing.assert_allclose(filt_response.time.squeeze(),
+        np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
 
     def test_compare_hard_limiting_40db(self):
@@ -80,10 +76,9 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
-        radial_filters = radial_filters_ema(f, 0.0875, 7, 40, 'hard')
-        filt_response = radial_filters.process(self.impulse)
+        radial_filters = radial_filters_ema(f, 0.0875, 7, 40, 'hard')       
 
-        np.testing.assert_allclose(filt_response.time.squeeze(),
+        np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
 
     def test_compare_tikhonov_20db(self):
@@ -101,10 +96,9 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
-        radial_filters = radial_filters_ema(f, 0.15, 13, 20, 'tikhonov')
-        filt_response = radial_filters.process(self.impulse)
+        radial_filters = radial_filters_ema(f, 0.15, 13, 20, 'tikhonov')       
 
-        np.testing.assert_allclose(filt_response.time.squeeze(),
+        np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
 
     def test_compare_soft_limiting_20db(self):
@@ -122,10 +116,9 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
-        radial_filters = radial_filters_ema(f, 0.15, 13, 20, 'soft')
-        filt_response = radial_filters.process(self.impulse)
+        radial_filters = radial_filters_ema(f, 0.15, 13, 20, 'soft')       
 
-        np.testing.assert_allclose(filt_response.time.squeeze(),
+        np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
 
     def test_compare_hard_limiting_20db(self):
@@ -143,8 +136,7 @@ class ValidateEMARadialFilters(unittest.TestCase):
 
         filter_length = 2048
         f = np.linspace(0, 48e3/2, filter_length//2+1)
-        radial_filters = radial_filters_ema(f, 0.15, 13, 20, 'hard')
-        filt_response = radial_filters.process(self.impulse)
+        radial_filters = radial_filters_ema(f, 0.15, 13, 20, 'hard')       
 
-        np.testing.assert_allclose(filt_response.time.squeeze(),
+        np.testing.assert_allclose(radial_filters.time,
                                    expected['ema_inv_rf_t'].T)
