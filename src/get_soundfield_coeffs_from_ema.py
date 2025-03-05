@@ -42,7 +42,7 @@ def get_sh_soundfield_coeffs_ema(signals, radial_filters, N, alpha):
     s_surf_m = pf.Signal(s_surf_m, signals.sampling_rate)
 
     # Get coefficients of soundfield by multiplying with radial filters eq. 13
-    # Realization as time domain convoluton using FIRFilter.process
+    # Realization as time domain convoluton
     s_sh = np.zeros((2*N+1, signals.n_samples))
 
     for i in range(2*N + 1):
